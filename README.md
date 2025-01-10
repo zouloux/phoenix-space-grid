@@ -64,11 +64,15 @@ cp .phoenix.js ~/.phoenix.js
 #### Better touch tool
 To catch 4 finger swipes and forward them to Phoenix, install [those triggers](./exported_triggers.bttpreset).
 
-## Update
+#### Config your mac
+- Disable all 4 fingers gestures in **System Settings > Trackpad > More gestures** 
+
+#### Update
 
 ```bash
 cd ~/phoenix-space-grid
 git pull
+./restart-phoenix.sh
 ```
 
 ---

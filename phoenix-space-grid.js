@@ -12,37 +12,36 @@ function info (a, b) {
 
 // Build and show a modal in the middle of the main screen
 // FIXME : Should be responsive, what about multiple screens ?
-const screenFrame = Screen.main().flippedVisibleFrame();
+// We measure it once at app launch, but it should change each time Screen configuration changes
+const screenFrame = Screen.main().flippedVisibleFrame()
 
-let lockScreenListener = false
+// Extract all space names and count them
+const allSpaceNames = Object.keys(config.spaces)
+const totalSpaces = allSpaceNames.length
 
-const allScreenNames = Object.keys(configDefault.screens)
-
-// Extract all registered apps that are tied to a screen
-const allRegisteredAppNames = Object.values( configDefault.screens ).map( s => s.apps.flat(1) ).flat(1);
-
-const screenModalAppearances = ["dark", "light"]
+// Extract all registered apps that are tied to a space
+const allRegisteredAppNames = Object.values( config.spaces ).map( s => s.apps.flat(1) ).flat(1)
 
 // ----------------------------------------------------------------------------- STATE
 
 const state = {
-	// Selected screen index
-	screenIndex: 0,
-	// State of all screens
-	screens: Object.keys( configDefault.screens ).map( name => ({
-		// Copy screen name
+	// Selected space index
+	spaceIndex: 0,
+	// State of all spaces
+	spaces: Object.keys( config.spaces ).map( name => ({
+		// Copy space name
 		name,
 		// Copy apps names array from config ( top and bottom )
-		apps: [ ...configDefault.screens[ name ].apps ],
-		// All apps names of this screen
-		allApps: configDefault.screens[ name ].apps.flat( 1 ),
+		apps: [ ...config.spaces[ name ].apps ],
+		// All apps names of this space
+		allApps: config.spaces[ name ].apps.flat( 1 ),
 		// Index of the current top layer app
 		topAppIndex: 0,
 		// Index of the current bottom layer app
 		bottomAppIndex: 0,
 		// If current is top or bottom
-		// FIXME : On dual screens setup, this should behave differently
-		//					Matbe keep the vertical position, but move automatically apps to their screens
+		// FIXME : On dual spaces setup, this should behave differently
+		//					Matbe keep the vertical position, but move automatically apps to their spaces
 		verticalPosition: 0, // 0: top, 1: bottom
 		// Little grid modals instances
 		modals: {
@@ -78,7 +77,7 @@ Event.on('appDidLaunch', ( app ) => {
 	if ( allRegisteredAppNames.indexOf(name) !== -1 ) {
 		info('App did launch', name)
 		_runningApps[ name ] = app
-		selectScreenFromAppName( name )
+		selectSpaceFromAppNames( name )
 	}
 })
 Event.on('appDidTerminate', ( app ) => {
@@ -90,76 +89,61 @@ Event.on('appDidTerminate', ( app ) => {
 	}
 })
 
-// When an app is focused, move to its screen
+// This lock prevent switching twice to an app when already switching from this script
+let lockAppDidActivate = false
+
+// When an app is focused, move to its space
 Event.on('appDidActivate', (app) => {
-	if ( lockScreenListener )
+	// Do not switch to the new focused app if we are switch from this script
+	if ( lockAppDidActivate )
 		return
+	// Special case, do not return to omni app space
 	const appName = app.name()
-	// Special case, do not return to omni app screen
-	if ( configDefault.omniApps.indexOf( appName ) !== -1 )
+	if ( config.omniApps.indexOf( appName ) !== -1 )
 		return
-	selectScreenFromAppName( appName )
+	selectSpaceFromAppNames( appName )
 })
 
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------- GRID
 
-function selectScreenFromAppName ( appName ) {
-	let foundScreenIndex = -1
-	let foundPosition = -1
-	let foundAppIndex = -1
-	state.screens.forEach( (screen, i) => {
-		screen.apps.forEach( (apps, ii) => {
-			apps.forEach( (app, iii) => {
-				if ( app !== appName )
-					return
-				foundScreenIndex = i
-				foundPosition = ii
-				foundAppIndex = iii
-			})
-		})
-	})
-	log("selectScreenFromAppName", {
-		appName, foundScreenIndex, foundPosition, foundAppIndex
-	})
-	const foundScreen = state.screens[ foundScreenIndex ]
-	if ( !foundScreen )
-		return
-	state.screenIndex = foundScreenIndex
-	foundScreen.verticalPosition = foundPosition
-	if ( foundPosition === 0 )
-		foundScreen.topAppIndex = foundAppIndex
-	else
-		foundScreen.bottomAppIndex = foundAppIndex
-	showSmallGrid( foundScreen.name )
+// Config defaults for the small grid
+const gridConfig = {
+	x: config.grid.marginRight ?? 100,
+	y: config.grid.marginBottom ?? 100,
+	spacesDistance: config.grid.spacesDistance ?? 170,
+	appsDistance: config.grid.appsDistance ?? 44,
+	appsMargin: config.grid.appsMargin ?? 14,
+	hasShadow: config.grid.hasShadow ?? false,
+	spaceFontSize: config.grid.spaceFontSize ?? 18,
+	appFontSize: config.grid.appFontSize ?? 8,
+	visibilityDuration: config.grid.visibilityDuration ?? 1,
 }
 
-// ----------------------------------------------------------------------------- SMALL GRID
+// Two appearances for spaces in grid
+const spaceModalAppearances = ["dark", "light"]
 
-// Distance between grid modals
-const _smallGridScreenDistance = 170
-const _smallGridAppDistance = 44
-const _smallGridAppMargin = 14
-
+// Register all delays to be able to cancel them when spacess switching fast
 let _smallGridDelays = []
 
-function buildSmallGridModals () {
-	const margin = {
-		x: configDefault.grid.marginRight ?? 100,
-		y: configDefault.grid.marginBottom ?? 100
-	}
-	const totalScreens = allScreenNames.length
-	state.screens.forEach( (screen, i) => {
+// Build grid modals once, at init.
+// We build them all once and keep their ref to avoid Phoenix memory leaks
+function buildGrid () {
+	state.spaces.forEach((space, i) => {
 		const position = {
-			x: screenFrame.width - margin.x - ( totalScreens - i) * _smallGridScreenDistance,
-			y: margin.y,
+			x: (
+				screenFrame.width
+				- gridConfig.x
+				- (totalSpaces - i) * gridConfig.spacesDistance
+			),
+			y: gridConfig.y,
 		}
-		screenModalAppearances.forEach( appearance => {
-			screen.modals[ appearance ] = Modal.build({
+		spaceModalAppearances.forEach( appearance => {
+			space.modals[ appearance ] = Modal.build({
 				appearance,
 				animationDuration: 0,
-				hasShadow: false,
-				text: screen.name,
-				weight: 18,
+				hasShadow: gridConfig.hasShadow,
+				text: space.name,
+				weight: gridConfig.spaceFontSize,
 				textAlignment: 'center',
 				// Place on bottom right
 				origin: ( frame ) => ({
@@ -168,20 +152,24 @@ function buildSmallGridModals () {
 				}),
 			})
 		})
-		screen.apps.forEach( (apps, verticalPosition) => {
+		space.apps.forEach( (apps, verticalPosition) => {
 			const direction = verticalPosition === 0 ? +1 : -1
 			apps.forEach( (app, i) => {
-				screen.modals.apps[ app ] = Modal.build({
+				space.modals.apps[ app ] = Modal.build({
 					appearance: "dark",
 					animationDuration: 0,
-					hasShadow: false,
+					hasShadow: gridConfig.hasShadow,
 					text: app,
-					weight: 8,
+					weight: gridConfig.appFontSize,
 					textAlignment: 'center',
-					// Place on bottom right
 					origin: ( frame ) => ({
 						x: position.x - frame.width / 2,
-						y: position.y + (i + 1) * direction * _smallGridAppDistance + _smallGridAppMargin * direction - frame.height / 2,
+						y: (
+							position.y
+							+ (i + 1) * direction * gridConfig.appsDistance
+							+ gridConfig.appsMargin * direction
+							- frame.height / 2
+						),
 					}),
 				})
 			})
@@ -189,69 +177,81 @@ function buildSmallGridModals () {
 	})
 }
 
-function showSmallGrid ( highlightScreenName, duration = 1 ) {
+// Show the grid and hide it automatically
+function showGrid ( highlightSpaceName ) {
 	_smallGridDelays.forEach( d => Timer.off( d ) )
 	_smallGridDelays = []
-	state.screens.forEach( screen => {
-		const screenName = screen.name
-		const isCurrentScreen = screenName === highlightScreenName
-		screenModalAppearances.forEach( appearance => {
+	state.spaces.forEach( space => {
+		const spaceName = space.name
+		const isCurrentSpace = spaceName === highlightSpaceName
+		spaceModalAppearances.forEach( appearance => {
 			const show = (
-				(!isCurrentScreen && appearance === 'dark')
-				|| (isCurrentScreen && appearance === 'light')
+				(!isCurrentSpace && appearance === 'dark')
+				|| (isCurrentSpace && appearance === 'light')
 			)
-			const modal = screen.modals[ appearance ]
+			const modal = space.modals[ appearance ]
+			// Show the correct modal color and close them all after the delay
 			if ( show )
 				modal.show()
 			else
 				modal.close()
-			_smallGridDelays.push( Timer.after(duration, () => modal.close() ) )
+			_smallGridDelays.push(
+				Timer.after(
+					config.grid.visibilityDuration,
+					() => modal.close()
+				)
+			)
 		})
-		Object.keys(screen.modals.apps).forEach( appName => {
-			const modal = screen.modals.apps[ appName ]
-			// if ( !isCurrentScreen ) {
-			// 	modal.close()
-			// }
-			// else {
-			// }
-			const isTop = !!screen.apps[0].find( a => a === appName)
-			const vTop = screen.verticalPosition
+		Object.keys(space.modals.apps).forEach( appName => {
+			// Get this app state
+			const modal = space.modals.apps[ appName ]
+			const isTop = !!space.apps[0].find( a => a === appName)
+			const vTop = space.verticalPosition
 			const isCurrentVerticalPosition = vTop === 0 && isTop || vTop === 1 && !isTop
-			const isCurrentVerticalApp = appName === screen.apps[ vTop ][ vTop === 0 ? screen.topAppIndex : screen.bottomAppIndex ]
-			const isCurrentApp = isCurrentScreen && isCurrentVerticalPosition && isCurrentVerticalApp
+			const isCurrentVerticalApp = appName === space.apps[ vTop ][ vTop === 0 ? space.topAppIndex : space.bottomAppIndex ]
+			const isCurrentApp = isCurrentSpace && isCurrentVerticalPosition && isCurrentVerticalApp
 			const isAppStarted = !!getRunningAppByName(appName)
+			// Current app is in light, other are in dark
 			modal.appearance = isCurrentApp ? "light" : "dark"
 			let color = isCurrentApp ? 0 : 255
+			// Inactive apps are greyed out
 			if ( !isAppStarted )
 				color = 100
 			modal.setTextColor( color, color, color, 1 )
+			// Show modal and close them all after the delay
 			modal.show()
-			_smallGridDelays.push( Timer.after(duration, () => modal.close() ) )
+			_smallGridDelays.push(
+				Timer.after(
+					config.grid.visibilityDuration,
+					() => modal.close()
+				)
+			)
 		})
 	})
 }
 
-// ----------------------------------------------------------------------------- SELECT SCREEN
+// ----------------------------------------------------------------------------- SELECT SPACE
 
-function selectScreen ( screenName ) {
-	// Get screen index from name
-	const newScreenIndex = allScreenNames.indexOf( screenName )
-	log("newScreenIndex", newScreenIndex)
-	if ( newScreenIndex === -1 )
+// Move to a space from its name
+function selectSpace ( spaceName ) {
+	// Get space index from name
+	const newSpaceIndex = allSpaceNames.indexOf( spaceName )
+	//log("newSpaceIndex", newSpaceIndex)
+	if ( newSpaceIndex === -1 )
 		return
 	// Update state
-	state.screenIndex = newScreenIndex
-	const currentScreen = state.screens[ state.screenIndex ]
-	const currentScreenAppNames = currentScreen.allApps
+	state.spaceIndex = newSpaceIndex
+	const currentSpace = state.spaces[ state.spaceIndex ]
+	const currentSpaceAppNames = currentSpace.allApps
 	// Get app name to focus
-	const vPos = currentScreen.verticalPosition
-	const appNameToFocus = currentScreen.apps[ vPos ]?.[ vPos === 0 ? currentScreen.topAppIndex : currentScreen.bottomAppIndex ]
-	// Browse all running apps, and hide those that are not in the screen
+	const vPos = currentSpace.verticalPosition
+	const appNameToFocus = currentSpace.apps[ vPos ]?.[ vPos === 0 ? currentSpace.topAppIndex : currentSpace.bottomAppIndex ]
+	// Browse all running apps, and hide those that are not in the space
 	log( "getAllRunningAppsNames", getAllRunningAppsNames() );
 	let appsToHide = []
 	getAllRunningAppsNames().forEach( appName => {
 		// If this is an omni app, do not alter it
-		if ( configDefault.omniApps.indexOf(appName) !== -1 )
+		if ( config.omniApps.indexOf(appName) !== -1 )
 			return
 		// Get running app instance
 		const runningApp = getRunningAppByName( appName )
@@ -265,109 +265,148 @@ function selectScreen ( screenName ) {
 			delete _runningApps[ appName ]
 			return
 		}
-		// Check if this app is in the screen to select
-		const isInScreen = currentScreenAppNames.indexOf( appName ) !== -1
-		// Last focused app of this screen will go back in focus
+		// Check if this app is in the space to select
+		const isInCurrentSpace = currentSpaceAppNames.indexOf( appName ) !== -1
+		// Last focused app of this space will go back in focus
 		if ( appNameToFocus === appName )
 			runningApp.focus()
-		// Other apps of this screen will be shown
-		else if ( isInScreen )
+		// Other apps of this space will be shown
+		else if ( isInCurrentSpace )
 			runningApp.show()
-		// All other registered apps ( in other screens ) will be hidden
+		// All other registered apps ( in other spaces ) will be hidden
 		else
 			appsToHide.push( runningApp )
 	})
 	// Hide other apps after, to avoid having 0 app focused, even for 1ms.
 	// Because MacOS will switch to Finder if no app is focused.
 	Timer.after(0.1, () => {
-		appsToHide.forEach( app => {
-			app.hide()
-		})
+		appsToHide.forEach( app => app.hide() )
 	})
 }
 
-function moveToScreen ( delta ) {
-	// Compute new position and corresponding screen
-	const newScreenIndex = Math.max(0, Math.min( state.screenIndex + delta, allScreenNames.length - 1))
-	const newScreenName = state.screens[ newScreenIndex ].name
-	// Lock app focus listener while we change screen
+// Move to a new space with an index delta
+function moveToSpace ( delta ) {
+	// Compute new position and corresponding space
+	const newSpaceIndex = Math.max(0, Math.min( state.spaceIndex + delta, allSpaceNames.length - 1))
+	const newSpaceName = state.spaces[ newSpaceIndex ].name
+	// Lock app focus listener while we change space
 	// Otherwise we could have an infinite loop of focusing, getting notified, etc
-	lockScreenListener = true
-	selectScreen( newScreenName )
-	Timer.after(.1, () => { lockScreenListener = false })
-	// Update small grid on screen
-	showSmallGrid( newScreenName )
+	lockAppDidActivate = true
+	selectSpace( newSpaceName )
+	Timer.after(.1, () => { lockAppDidActivate = false })
+	// Update small grid on space
+	showGrid( newSpaceName )
+}
+
+// Update space state to select an app from its name
+function selectSpaceFromAppNames ( appName ) {
+	// Search in all spaces for that app
+	let foundSpaceIndex = -1
+	let foundPosition = -1
+	let foundAppIndex = -1
+	state.spaces.forEach( ( space, i) => {
+		space.apps.forEach( (apps, ii) => {
+			apps.forEach( (app, iii) => {
+				if ( app !== appName )
+					return
+				foundSpaceIndex = i
+				foundPosition = ii
+				foundAppIndex = iii
+			})
+		})
+	})
+	log("selectSpaceFromAppName", {
+		appName, foundSpaceIndex, foundPosition, foundAppIndex
+	})
+	const foundSpace = state.spaces[ foundSpaceIndex ]
+	if ( !foundSpace )
+		return
+	// We found the corresponding space, update state
+	state.spaceIndex = foundSpaceIndex
+	foundSpace.verticalPosition = foundPosition
+	if ( foundPosition === 0 )
+		foundSpace.topAppIndex = foundAppIndex
+	else
+		foundSpace.bottomAppIndex = foundAppIndex
+	// Show the grid
+	showGrid( foundSpace.name )
 }
 
 
 // ----------------------------------------------------------------------------- SWITCH APP
 
+// Switch top or bottom app
+// Limit is there to avoid infinite loop if no running app is found while switching
 function switchApp ( verticalPosition, limit = 10 ) {
 	if ( limit === 0 )
 		return
 	log("switchApp", verticalPosition)
-	const screen = state.screens[ state.screenIndex ]
-	if ( !screen )
+	const space = state.spaces[ state.spaceIndex ]
+	if ( !space )
 		return
-	if ( verticalPosition === screen.verticalPosition ) {
+	// Switch in current vertical position ( for ex, 4 fingers ups while an "up" app is already focused )
+	if ( verticalPosition === space.verticalPosition ) {
+		// Go to next app index on top app
 		if ( verticalPosition === 0 ) {
-			++screen.topAppIndex
-			if ( screen.topAppIndex > screen.apps[0].length - 1 )
-				screen.topAppIndex = 0
+			++space.topAppIndex
+			if ( space.topAppIndex > space.apps[0].length - 1 )
+				space.topAppIndex = 0
 		}
+		// Go to next app index on bottom app
 		else if ( verticalPosition === 1 ) {
-			++screen.bottomAppIndex
-			if ( screen.bottomAppIndex > screen.apps[1].length - 1 )
-				screen.bottomAppIndex = 0
+			++space.bottomAppIndex
+			if ( space.bottomAppIndex > space.apps[1].length - 1 )
+				space.bottomAppIndex = 0
 		}
 	}
+	// Changing vertical position, no app index change
 	else {
-		screen.verticalPosition = verticalPosition
+		space.verticalPosition = verticalPosition
 	}
-	const vPos = screen.verticalPosition
-	const appNameToFocus = screen.apps[ vPos ][ vPos === 0 ? screen.topAppIndex : screen.bottomAppIndex ]
+	// Find app to focus
+	const vPos = space.verticalPosition
+	const appNameToFocus = space.apps[ vPos ][ vPos === 0 ? space.topAppIndex : space.bottomAppIndex ]
 	const appToFocus = getRunningAppByName( appNameToFocus )
+	// App not found, continue switch and decrease limit to avoid infinite loops
 	if ( !appToFocus ) {
 		switchApp( verticalPosition, --limit )
 		return
 	}
-	if ( !appToFocus )
-		return
+	// Focus this app, other apps of this space will simply go behind
 	appToFocus.focus()
 }
 
 // ----------------------------------------------------------------------------- KEYS
 
+// All those meta keys are send by Better Touch Tool
 const fourFingersMetakeys = ['control', 'option', 'command', 'shift']
 
-// Shortcut to open cross modal
-Key.on('tab', ['option'], () => {
-	// _escapeListener = Key.on('escape', [], closeCrossModal);
-	console.log('TAB')
-});
-Key.on('space', fourFingersMetakeys, () => {
-	// _escapeListener = Key.on('escape', [], closeCrossModal);
-	console.log('SPACE')
-})
+// TODO : Do a better alt-tab than the macos one
+// Key.on('tab', ['option'], () => {
+// 	console.log('TAB')
+// });
+// Key.on('space', fourFingersMetakeys, () => {
+// 	console.log('SPACE')
+// })
 
-// Horizontal four finger keystroke to change screen
-Key.on('right', fourFingersMetakeys, () => moveToScreen(+1) )
-Key.on('left', 	fourFingersMetakeys, () => moveToScreen(-1) )
+// Horizontal four finger keystroke to change space
+Key.on('right', fourFingersMetakeys, () => moveToSpace(+1) )
+Key.on('left', 	fourFingersMetakeys, () => moveToSpace(-1) )
 
-// Vertical four finger keystroke to change app in screen
+// Vertical four finger keystroke to switch top or bottom app
 Key.on('up', 	fourFingersMetakeys, () => switchApp(0) )
 Key.on('down', 	fourFingersMetakeys, () => switchApp(1) )
 
 
 // ----------------------------------------------------------------------------- INIT
 
-// Build small screen modals
-buildSmallGridModals()
+// Build small space modals
+buildGrid()
 
-// Select current screen from focused app at start
+// Select current space from focused app at start
 const focusedAppAtStart = App.focused()
 if ( focusedAppAtStart ) {
-	selectScreenFromAppName( focusedAppAtStart.name() )
+	selectSpaceFromAppNames( focusedAppAtStart.name() )
 }
 
 // Init Phoenix
