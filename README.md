@@ -59,13 +59,17 @@ rm ~/.phoenix.js
 cp .phoenix.js ~/.phoenix.js
 ```
 
-> Now edit `~/phoenix-space-grid/config.js` and adapt to your needs. 
-
 #### Better touch tool
 To catch 4 finger swipes and forward them to Phoenix, install [those triggers](./exported_triggers.bttpreset).
 
 #### Config your mac
 - Disable all 4 fingers gestures in **System Settings > Trackpad > More gestures** 
+
+#### Edit config
+Now edit `~/phoenix-space-grid/config.js` and adapt to your needs, when finished, run `./restart-phoenix.sh`
+You should receive a "Phoenix reloaded" notification.
+
+> Please note that the first update can be slow if you have a lot of apps running.
 
 #### Update
 
