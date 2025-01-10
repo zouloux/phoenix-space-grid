@@ -77,7 +77,7 @@ Event.on('appDidLaunch', ( app ) => {
 	if ( allRegisteredAppNames.indexOf(name) !== -1 ) {
 		info('App did launch', name)
 		_runningApps[ name ] = app
-		selectSpaceFromAppNames( name )
+		selectSpaceFromAppNames( name, true )
 	}
 })
 Event.on('appDidTerminate', ( app ) => {
@@ -91,17 +91,23 @@ Event.on('appDidTerminate', ( app ) => {
 
 // This lock prevent switching twice to an app when already switching from this script
 let lockAppDidActivate = false
+let currentAppName = null
 
 // When an app is focused, move to its space
 Event.on('appDidActivate', (app) => {
+	// Remember app name to detect changes from omni app
+	let previousAppName = currentAppName
+	const appName = app.name()
+	currentAppName = appName
 	// Do not switch to the new focused app if we are switch from this script
 	if ( lockAppDidActivate )
 		return
 	// Special case, do not return to omni app space
-	const appName = app.name()
 	if ( config.omniApps.indexOf( appName ) !== -1 )
 		return
-	selectSpaceFromAppNames( appName )
+	// Show grid only if not coming from an omni app
+	const doShowGrid = !previousAppName || config.omniApps.indexOf( previousAppName ) === -1
+	selectSpaceFromAppNames( appName, doShowGrid )
 })
 
 // ----------------------------------------------------------------------------- GRID
@@ -299,7 +305,7 @@ function moveToSpace ( delta ) {
 }
 
 // Update space state to select an app from its name
-function selectSpaceFromAppNames ( appName ) {
+function selectSpaceFromAppNames ( appName, doShowGrid ) {
 	// Search in all spaces for that app
 	let foundSpaceIndex = -1
 	let foundPosition = -1
@@ -329,7 +335,8 @@ function selectSpaceFromAppNames ( appName ) {
 	else
 		foundSpace.bottomAppIndex = foundAppIndex
 	// Show the grid
-	showGrid( foundSpace.name )
+	if ( doShowGrid )
+		showGrid( foundSpace.name )
 }
 
 
@@ -406,7 +413,7 @@ buildGrid()
 // Select current space from focused app at start
 const focusedAppAtStart = App.focused()
 if ( focusedAppAtStart ) {
-	selectSpaceFromAppNames( focusedAppAtStart.name() )
+	selectSpaceFromAppNames( focusedAppAtStart.name(), true )
 }
 
 // Init Phoenix

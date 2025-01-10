@@ -35,9 +35,11 @@ This allows us to have **instant space switch** with **zero transition**.
 > This is not a real 2D grid on purpose, switching between apps is quicker like so
 
 #### Todo
+- [ ] Do not show grid when switching from an omni app
 - [ ] Test with multiple screens setup
-- [ ] Better code documentation
 - [ ] Add config to place grid anywhere
+- [x] Better code documentation
+- [x] Grid configuration
 
 ---
 ## Setup
