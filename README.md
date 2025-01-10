@@ -32,6 +32,8 @@ This allows us to have **instant space switch** with **zero transition**.
 - Switch top app with 4 fingers swipe top
 - Switch bottom app with 4 fingers swipe bottom
 
+![screenshot-1.png](screenshot-1.png)
+
 > This is not a real 2D grid on purpose, switching between apps is quicker like so
 
 #### Todo
