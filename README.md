@@ -51,7 +51,7 @@ Run this command to download and install **phoenix-space-grid** with default con
 - This will **override** `~/.phoenix.js` file.
 - Will be installed in `~/phoenix-space-grid`
 
-```
+```bash
 git clone git@github.com:zouloux/phoenix-space-grid.git ~/phoenix-space-grid
 cd ~/phoenix-space-grid
 cp config.default.js config.js
@@ -63,6 +63,13 @@ cp .phoenix.js ~/.phoenix.js
 
 #### Better touch tool
 To catch 4 finger swipes and forward them to Phoenix, install [those triggers](./exported_triggers.bttpreset).
+
+## Update
+
+```bash
+cd ~/phoenix-space-grid
+git pull
+```
 
 ---
 ## Dev

@@ -1,2 +1,2 @@
-require("~/phoenix-virtual-grid/config.js");
-require("~/phoenix-virtual-grid/phoenix-space-grid.js");
+require("~/phoenix-space-grid/config.js");
+require("~/phoenix-space-grid/phoenix-space-grid.js");
