@@ -76,7 +76,7 @@ It will only print outputs when using `log()` and `info()` functions.
 
 #### Refreshing
 If you update config or script, Phoenix will try to restart. Sometimes it create multiple instances of Modals, memory leak, and will eventually crash.
-You can setup [this Raycast script](./raycast-restart-phoenix.sh) to restart Phoenix fully when working on config or script.
+You can setup [this Raycast script](./restart-phoenix.sh) to restart Phoenix fully when working on config or script.
 
 > If you do not have Raycast, simply run this script to restart Phoenix 
 
