@@ -10,18 +10,18 @@ This allows us to have **instant space switch** with **zero transition**.
 
 #### No caveat
 - **alt + tab** still works, it changes Virtual Spaces when switching app
-- App exposé and Mission control works, it shows only the current virtual space app, not all apps
+- **App Exposé** and **Mission Control** works as expected, it shows only the current Virtual Space apps
 - Fully configurable
-- Does not need System Integrity Protection to be disabled
-- Can be extended by updating [phoenix-space-grid.js](phoenix-space-grid.js)
+- Does not need **System Integrity Protection** to be disabled
+- Can be extended and customized by updating [phoenix-space-grid.js](phoenix-space-grid.js)
 
 #### What is needed
 - A Mac
 - Git
 - [Phoenix](https://github.com/kasper/phoenix/releases/) installed ( free )
 - [Better Touch Tool](https://folivora.ai/) installed ( not free )
-- 4 fingers
 - Programming basics
+- 4 fingers
 
 > This is very beta and default settings are my own. Tweak it for your needs!
 
@@ -32,6 +32,7 @@ This allows us to have **instant space switch** with **zero transition**.
 - Switch top app with 4 fingers swipe top
 - Switch bottom app with 4 fingers swipe bottom
 
+> This is not a real 2D grid on purpose, switching between apps is quicker like so
 
 #### Todo
 - [ ] Test with multiple screens setup
