@@ -37,9 +37,11 @@ This allows us to have **instant space switch** with **zero transition**.
 > This is not a real 2D grid on purpose, switching between apps is quicker like so
 
 #### Todo
-- [ ] Do not show grid when switching from an omni app
 - [ ] Test with multiple screens setup
 - [ ] Add config to place grid anywhere
+- [ ] Better UI ( Phoenix ? )
+- [ ] Bypass Better Touch Tool dependency ( Phoenix ? )
+- [x] Do not show grid when switching from an omni app
 - [x] Better code documentation
 - [x] Grid configuration
 

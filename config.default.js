@@ -27,7 +27,7 @@ const config = {
 	// Apps that are on all Virtual Spaces
 	// This is highly recommended to have Finder as an omni app
 	// Other apps that are not declared will be ignored
-	omniApps: ["Finder", "iTerm", "BoltAI", "System Settings", "Activity Monitor"],
+	omniApps: ["Finder", "iTerm2", "BoltAI", "System Settings", "Activity Monitor"],
 	// Apps that are tied to a specific screen
 	spaces: {
 		"Organise" : {
