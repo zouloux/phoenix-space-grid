@@ -15,6 +15,10 @@ This allows us to have **instant space switch** with **zero transition**.
 - Does not need **System Integrity Protection** to be disabled
 - Can be extended and customized by updating [phoenix-space-grid.js](phoenix-space-grid.js)
 
+#### Caveat
+- You have to config everything in a JS file, no UI to configure spaces.
+- Yet another tool to install
+
 #### What is needed
 - A Mac
 - Git
