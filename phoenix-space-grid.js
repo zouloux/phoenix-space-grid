@@ -418,8 +418,8 @@ if ( focusedAppAtStart ) {
 
 // Init Phoenix
 Phoenix.set({
-	daemon: false,
-	openAtLogin: true,
+	daemon: config.daemon,
+	openAtLogin: config.openAtLogin,
 });
 Phoenix.notify('Phoenix reloaded');
 

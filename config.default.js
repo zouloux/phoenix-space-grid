@@ -4,7 +4,8 @@
 
 const config = {
 	// If false, will show Phoenix in the MacOS menu bar
-	daemon: false,
+	daemon: true,
+	openAtLogin: true,
 	// Grid is shown when changing app or space
 	grid: {
 		// Grid is on bottom right of the main screen
