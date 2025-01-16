@@ -107,7 +107,7 @@ Event.on('appDidActivate', (app) => {
 		return
 	// Show grid only if not coming from an omni app
 	const doShowGrid = !previousAppName || config.omniApps.indexOf( previousAppName ) === -1
-	selectSpaceFromAppNames( appName, doShowGrid )
+	selectSpaceFromAppNames( appName, doShowGrid, true )
 })
 
 // ----------------------------------------------------------------------------- GRID
@@ -305,7 +305,7 @@ function moveToSpace ( delta ) {
 }
 
 // Update space state to select an app from its name
-function selectSpaceFromAppNames ( appName, doShowGrid ) {
+function selectSpaceFromAppNames ( appName, doShowGrid, showGridOnlyOnSpaceChange = false ) {
 	// Search in all spaces for that app
 	let foundSpaceIndex = -1
 	let foundPosition = -1
@@ -327,6 +327,9 @@ function selectSpaceFromAppNames ( appName, doShowGrid ) {
 	const foundSpace = state.spaces[ foundSpaceIndex ]
 	if ( !foundSpace )
 		return
+	// If we changed space
+	if ( (config.grid.showGridOnlyOnSpaceChange ?? false) && showGridOnlyOnSpaceChange && foundSpaceIndex === state.spaceIndex )
+		doShowGrid = false
 	// We found the corresponding space, update state
 	state.spaceIndex = foundSpaceIndex
 	foundSpace.verticalPosition = foundPosition
@@ -392,17 +395,20 @@ const fourFingersMetakeys = ['control', 'option', 'command', 'shift']
 // Key.on('tab', ['option'], () => {
 // 	console.log('TAB')
 // });
-// Key.on('space', fourFingersMetakeys, () => {
-// 	console.log('SPACE')
-// })
+Key.on('space', fourFingersMetakeys, () => {
+	// TODO : Show grid and wait for click or escape key
+	log('SPACE')
+})
 
 // Horizontal four finger keystroke to change space
-Key.on('right', fourFingersMetakeys, () => moveToSpace(+1) )
-Key.on('left', 	fourFingersMetakeys, () => moveToSpace(-1) )
+const horizontalSign = (config.events?.invertHorizontalSwipes ?? false) ? -1 : +1
+Key.on('right', fourFingersMetakeys, () => moveToSpace( horizontalSign * +1 ) )
+Key.on('left', 	fourFingersMetakeys, () => moveToSpace( horizontalSign * -1 ) )
 
 // Vertical four finger keystroke to switch top or bottom app
-Key.on('up', 	fourFingersMetakeys, () => switchApp(0) )
-Key.on('down', 	fourFingersMetakeys, () => switchApp(1) )
+const invertVerticalSwipes = (config.events?.invertVerticalSwipes ?? false)
+Key.on('up', 	fourFingersMetakeys, () => switchApp(invertVerticalSwipes ? 1 : 0) )
+Key.on('down', 	fourFingersMetakeys, () => switchApp(invertVerticalSwipes ? 0 : 1) )
 
 
 // ----------------------------------------------------------------------------- INIT
@@ -418,8 +424,8 @@ if ( focusedAppAtStart ) {
 
 // Init Phoenix
 Phoenix.set({
-	daemon: config.daemon,
-	openAtLogin: config.openAtLogin,
+	daemon: config.phoenix.daemon,
+	openAtLogin: config.phoenix.openAtLogin,
 });
 Phoenix.notify('Phoenix reloaded');
 

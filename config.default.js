@@ -3,9 +3,15 @@
  */
 
 const config = {
-	// If false, will show Phoenix in the MacOS menu bar
-	daemon: true,
-	openAtLogin: true,
+	phoenix: {
+		// If false, will show Phoenix in the MacOS menu bar
+		daemon: true,
+		openAtLogin: true,
+	},
+	events: {
+		invertHorizontalSwipes: false,
+		invertVerticalSwipes: true,
+	},
 	// Grid is shown when changing app or space
 	grid: {
 		// Grid is on bottom right of the main screen
@@ -23,7 +29,9 @@ const config = {
 		spaceFontSize: 18,
 		appFontSize: 8,
 		// Grid visibility duration in seconds
-		visibilityDuration: 1,
+		visibilityDuration: 0.8,
+		// When swapping all in same space, do not show grid
+		showGridOnlyOnSpaceChange: false,
 	},
 	// Apps that are on all Virtual Spaces
 	// This is highly recommended to have Finder as an omni app
