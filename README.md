@@ -43,9 +43,11 @@ This allows us to have **instant space switch** with **zero transition**.
 > Works well with 2 screens vertical setup with the external monitor optional
 
 #### Todo
-- [ ] Add config to place grid anywhere
-- [ ] Better UI ( Phoenix ? )
-- [ ] Bypass Better Touch Tool dependency ( Phoenix ? )
+- [ ] Add a loading state that locks events and prints only a "loading" Modal
+- [ ] Add config to place grid anywhere ( corner anchor, then screen selection later )
+- [ ] Better UI ( Tied to Phoenix ? )
+- [ ] Bypass Better Touch Tool dependency ( Tied to Phoenix ? )
+- [ ] 4 fingers swipes still triggers 2 fingers swipes in some cases, needs to be patched
 - [x] Test with multiple screens setup
 - [x] Do not show grid when switching from an omni app
 - [x] Better code documentation
