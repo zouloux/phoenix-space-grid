@@ -405,10 +405,27 @@ const horizontalSign = (config.events?.invertHorizontalSwipes ?? false) ? -1 : +
 Key.on('right', fourFingersMetakeys, () => moveToSpace( horizontalSign * +1 ) )
 Key.on('left', 	fourFingersMetakeys, () => moveToSpace( horizontalSign * -1 ) )
 
+function verticalInvert ( value ) {
+	const doInvertOnDualScreens = (config.events?.invertVerticalSwipesOnMultipleScreens ?? false)
+	if ( !doInvertOnDualScreens )
+		return value
+	const hasMultipleScreens = Screen.all().length > 1
+	if ( !hasMultipleScreens )
+		return value
+	return value === 0 ? 1 : 0
+}
+
+
 // Vertical four finger keystroke to switch top or bottom app
 const invertVerticalSwipes = (config.events?.invertVerticalSwipes ?? false)
-Key.on('up', 	fourFingersMetakeys, () => switchApp(invertVerticalSwipes ? 1 : 0) )
-Key.on('down', 	fourFingersMetakeys, () => switchApp(invertVerticalSwipes ? 0 : 1) )
+Key.on('up', 	fourFingersMetakeys, () => {
+	const value = verticalInvert(invertVerticalSwipes ? 1 : 0)
+	switchApp(value)
+})
+Key.on('down', 	fourFingersMetakeys, () => {
+	const value = verticalInvert(invertVerticalSwipes ? 0 : 1)
+	switchApp(value)
+})
 
 
 // ----------------------------------------------------------------------------- INIT

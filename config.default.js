@@ -10,7 +10,12 @@ const config = {
 	},
 	events: {
 		invertHorizontalSwipes: false,
-		invertVerticalSwipes: true,
+		invertVerticalSwipes: false,
+		// Invert only when multiple screens are connected
+		// This feels right to me with this setting :
+		// - With one screen, switch vertically like 2D grid spaces
+		// - With 2 screens vertically, switch inverted to tell where to swap app
+		invertVerticalSwipesOnMultipleScreens: true,
 	},
 	// Grid is shown when changing app or space
 	grid: {
@@ -31,7 +36,7 @@ const config = {
 		// Grid visibility duration in seconds
 		visibilityDuration: 0.8,
 		// When swapping all in same space, do not show grid
-		showGridOnlyOnSpaceChange: false,
+		showGridOnlyOnSpaceChange: true,
 	},
 	// Apps that are on all Virtual Spaces
 	// This is highly recommended to have Finder as an omni app
