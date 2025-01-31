@@ -10,12 +10,13 @@ const config = {
 	},
 	events: {
 		invertHorizontalSwipes: false,
-		invertVerticalSwipes: false,
+		invertVerticalSwipes: true,
 		// Invert only when multiple screens are connected
 		// This feels right to me with this setting :
 		// - With one screen, switch vertically like 2D grid spaces
 		// - With 2 screens vertically, switch inverted to tell where to swap app
-		invertVerticalSwipesOnMultipleScreens: true,
+		// Update: feels off after some week of use, disabled
+		invertVerticalSwipesOnMultipleScreens: false,
 	},
 	// Grid is shown when changing app or space
 	grid: {
