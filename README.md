@@ -77,11 +77,18 @@ cp .phoenix.js ~/.phoenix.js
 To catch 4 finger swipes and forward them to Phoenix, install [those triggers](./exported_triggers.bttpreset).
 
 #### Config your mac
-- Disable all 4 fingers gestures in **System Settings > Trackpad > More gestures** 
+- Disable all 4 fingers gestures in **System Settings > Trackpad > More gestures**
+- Remove all your native MacOS Spaces, this script will create Virtual Spaces. 
+
 
 #### Edit config
 Now edit `~/phoenix-space-grid/config.js` and adapt to your needs, when finished, run `./restart-phoenix.sh`
 You should receive a "Phoenix reloaded" notification.
+
+In `config.js`, your application names has to be exactly correct ( case, spaces, etc ).
+To see an application name, simply start it and use **command tab** to display it.
+
+
 
 > Please note that the first update can be slow if you have a lot of apps running.
 
