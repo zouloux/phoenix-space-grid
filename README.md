@@ -66,7 +66,7 @@ Run this command to download and install **phoenix-space-grid** with default con
 - Will be installed in `~/phoenix-space-grid`
 
 ```bash
-git clone git@github.com:zouloux/phoenix-space-grid.git ~/phoenix-space-grid
+git clone https://github.com/zouloux/phoenix-space-grid.git ~/phoenix-space-grid
 cd ~/phoenix-space-grid
 cp config.default.js config.js
 rm ~/.phoenix.js
